@@ -22,23 +22,27 @@ def add_to_word_dict(_list, _dict, label):
 def create_edge(word_dict):
     with open('./train.tsv', 'rb') as f:
         reader = csv.reader(f, delimiter='\t')
+        next(reader, None)
         start, end, capacity = [], [], []
         offset=len(word_dict)-2
         for row in reader:
             tokens = remove_punctuations(row[2].lower()).split(' ')
-
+            label=row[1]
             for token1, token2 in zip(tokens[:-1], tokens[1:]):
                 tokenid1 = word_dict[token1]['word_id']
                 tokenid2 = word_dict[token2]['word_id']
                 start.append(tokenid1+offset)
                 end.append(tokenid2+offset)
-                capacity.append(99)
+                if label in ["true", "mostly-true", 'half-true']:
+                    capacity.append(1)
+                else:
+                    capacity.append(5)
         for word in word_dict:
             if word=='[SOURCE]' or word=='[SINK]':
                 continue
             else:
                 tokenid=word_dict[word]['word_id']
-                c=int(10*(word_dict[word]['false_counts']+1)/(word_dict[word]['true_counts']+1))
+                c=int(3*(word_dict[word]['false_counts']+1)/(word_dict[word]['true_counts']+1))
                 start.append(tokenid)
                 end.append(tokenid+offset)
                 capacity.append(c)
@@ -62,6 +66,7 @@ def construct_word_dict(filename):
     word_dict['[SOURCE]']={"word_id":0,"true":0,"mostly-true":0,"half-true":0,"barely-true":0,"false":0,"pants-fire":0,"total_counts":0,"true_counts":0,"false_counts":0}
     with open('./train.tsv','rb') as f:
         reader=csv.reader(f,delimiter='\t')
+        next(reader, None)
         for row in reader:
             tokens = remove_punctuations(row[2].lower()).split(' ')
             for token in tokens:
@@ -93,7 +98,7 @@ def main():
     print len(start)
     print word_dict['[SOURCE]']
     print word_dict['[SINK]']
-main()
+# main()
 
 
 
