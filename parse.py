@@ -49,7 +49,7 @@ def construct_word_dict(filename):
     
     # with open(vocabfile_path) as f:
 
-    # word_dict['[UNK]']={"word_id":0,"true":1,"mostly-true":0,"half-true":0,"barely-true":0,"false":1,"pants-fire":0,"total_counts":2,"true_counts":1,"false_counts":1}
+    word_dict['[SOURCE]']={"word_id":0,"true":0,"mostly-true":0,"half-true":0,"barely-true":0,"false":1,"pants-fire":0,"total_counts":0,"true_counts":0,"false_counts":0}
     with open('./train.tsv','rb') as f:
         reader=csv.reader(f,delimiter='\t')
         for row in reader:
@@ -57,6 +57,7 @@ def construct_word_dict(filename):
             for token in tokens:
                 if not token in word_dict:
                     word_dict[token] = {"word_id":len(word_dict),"true":0,"mostly-true":0,"half-true":0,"barely-true":0,"false":0,"pants-fire":0,"total_counts":0,"true_counts":0,"false_counts":0}
+    word_dict['[SINK]']={"word_id":len(word_dict),"true":0,"mostly-true":0,"half-true":0,"barely-true":0,"false":0,"pants-fire":0,"total_counts":0,"true_counts":0,"false_counts":0}
     return word_dict
 
 # count words in the file, categorize them into word_dict
@@ -76,14 +77,12 @@ def main():
     # count_words("test.tsv", word_dict)
     count_words("train.tsv", word_dict)
     # count_words("valid.tsv", word_dict)
-    count = 0
-    for key,val in word_dict.items():
-        print key,val
-        if val['total_counts'] > 0:
-            count += 1
-        #     print key, val
-    print count,"==================="
+    start,end,capacity=create_edge(word_dict)
 
+        #     print key, val
+    print len(start)
+    print word_dict['[SOURCE]']
+    print word_dict['[SINK]']
 main()
 
 
