@@ -23,15 +23,25 @@ def create_edge(word_dict):
     with open('./train.tsv', 'rb') as f:
         reader = csv.reader(f, delimiter='\t')
         start, end, capacity = [], [], []
+        offset=len(word_dict)-2
         for row in reader:
             tokens = remove_punctuations(row[2].lower()).split(' ')
 
             for token1, token2 in zip(tokens[:-1], tokens[1:]):
                 tokenid1 = word_dict[token1]['word_id']
                 tokenid2 = word_dict[token2]['word_id']
-                start.append(tokenid1)
-                end.append(tokenid2)
+                start.append(tokenid1+offset)
+                end.append(tokenid2+offset)
                 capacity.append(99)
+        for word in word_dict:
+            if word=='[SOURCE]' or word=='[SINK]':
+                continue
+            else:
+                tokenid=word_dict[word]['word_id']
+                c=int(10*(word_dict[word]['false_counts']+1)/(word_dict[word]['true_counts']+1))
+                start.append(tokenid)
+                end.append(tokenid+offset)
+                capacity.append(c)
     return start, end, capacity
 
 # remove all punctuations in the srting except hyphen and underscore. e.g "semi-colon&(user_id)+32." => "semi-colon user_id 32"
@@ -49,7 +59,7 @@ def construct_word_dict(filename):
     
     # with open(vocabfile_path) as f:
 
-    word_dict['[SOURCE]']={"word_id":0,"true":0,"mostly-true":0,"half-true":0,"barely-true":0,"false":1,"pants-fire":0,"total_counts":0,"true_counts":0,"false_counts":0}
+    word_dict['[SOURCE]']={"word_id":0,"true":0,"mostly-true":0,"half-true":0,"barely-true":0,"false":0,"pants-fire":0,"total_counts":0,"true_counts":0,"false_counts":0}
     with open('./train.tsv','rb') as f:
         reader=csv.reader(f,delimiter='\t')
         for row in reader:
@@ -57,7 +67,7 @@ def construct_word_dict(filename):
             for token in tokens:
                 if not token in word_dict:
                     word_dict[token] = {"word_id":len(word_dict),"true":0,"mostly-true":0,"half-true":0,"barely-true":0,"false":0,"pants-fire":0,"total_counts":0,"true_counts":0,"false_counts":0}
-    word_dict['[SINK]']={"word_id":len(word_dict),"true":0,"mostly-true":0,"half-true":0,"barely-true":0,"false":0,"pants-fire":0,"total_counts":0,"true_counts":0,"false_counts":0}
+    word_dict['[SINK]']={"word_id":2*len(word_dict)-1,"true":0,"mostly-true":0,"half-true":0,"barely-true":0,"false":0,"pants-fire":0,"total_counts":0,"true_counts":0,"false_counts":0}
     return word_dict
 
 # count words in the file, categorize them into word_dict
