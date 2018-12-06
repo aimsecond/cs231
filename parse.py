@@ -3,18 +3,17 @@ import csv
 import string
 from string import maketrans
 
-class Parse:
-dir_path = os.path.dirname(os.path.realpath(__file__))
-word_id = 0
+# class Parse:
+# dir_path = os.path.dirname(os.path.realpath(__file__))
+# word_id = 0
 
 def add_to_word_dict(_list, _dict, label):
     for word in _list:
         word = word.lower()
         if word not in _dict:
-            word_id += 1
-            _dict[word] = {"word_id":word_id,"true":0,"mostly-true":0,"half-true":0,"barely-true":0,"false":0,"pants-fire":0,"total_counts":0,"true_counts":0,"false_counts":0}
+            _dict[word] = {"word_id":len(_dict),"true":0,"mostly-true":0,"half-true":0,"barely-true":0,"false":0,"pants-fire":0,"total_counts":0,"true_counts":0,"false_counts":0}
         _dict[word][label] += 1
-        if label in ["true","mostly-true"]:
+        if label in ["true","mostly-true",'half-true']:
             _dict[word]["true_counts"] += 1
         elif label in ["barely-true","false","pants-fire"]:
             _dict[word]["false_counts"] += 1
@@ -25,7 +24,7 @@ def create_edge(word_dict):
         reader = csv.reader(f, delimiter='\t')
         start, end, capacity = [], [], []
         for row in reader:
-            tokens = remove_punctuations(row[2]).split(' ')
+            tokens = remove_punctuations(row[2].lower()).split(' ')
 
             for token1, token2 in zip(tokens[:-1], tokens[1:]):
                 tokenid1 = word_dict[token1]['word_id']
@@ -46,37 +45,40 @@ def remove_punctuations(_string):
 # construct the word_dict dictionary
 def construct_word_dict(filename):
     word_dict = {}
-    vocabfile_path = os.path.join(dir_path,filename)
+    # vocabfile_path = os.path.join(dir_path,filename)
     
-    with open(vocabfile_path) as f:
-        for line in f:
-            word = line[:-1].lower()
-            if not word in word_dict:
-                word_id += 1
-                word_dict[word] = {"word_id":word_id,"true":0,"mostly-true":0,"half-true":0,"barely-true":0,"false":0,"pants-fire":0,"total_counts":0,"true_counts":0,"false_counts":0}
+    # with open(vocabfile_path) as f:
+
+    # word_dict['[UNK]']={"word_id":0,"true":1,"mostly-true":0,"half-true":0,"barely-true":0,"false":1,"pants-fire":0,"total_counts":2,"true_counts":1,"false_counts":1}
+    with open('./train.tsv','rb') as f:
+        reader=csv.reader(f,delimiter='\t')
+        for row in reader:
+            tokens = remove_punctuations(row[2].lower()).split(' ')
+            for token in tokens:
+                if not token in word_dict:
+                    word_dict[token] = {"word_id":len(word_dict),"true":0,"mostly-true":0,"half-true":0,"barely-true":0,"false":0,"pants-fire":0,"total_counts":0,"true_counts":0,"false_counts":0}
     return word_dict
 
 # count words in the file, categorize them into word_dict
 def count_words(filename, word_dict):
-    file_path = os.path.join(dir_path, filename)
+    file_path = filename
     with open(file_path) as tsvfile:
         reader = csv.DictReader(tsvfile, dialect='excel-tab')
         for row in reader:
-            statement = remove_punctuations(row['statement'])
-            statement_id = row['ID']
+            statement = remove_punctuations(row['statement'].lower())
             statement_list = statement.split(" ")
             add_to_word_dict(statement_list, word_dict, row['label'])
 
-def calculate
+# def calculate
 
 def main():
     word_dict = construct_word_dict('vocab.txt')
-    count_words("test.tsv", word_dict)
+    # count_words("test.tsv", word_dict)
     count_words("train.tsv", word_dict)
-    count_words("valid.tsv", word_dict)
+    # count_words("valid.tsv", word_dict)
     count = 0
     for key,val in word_dict.items():
-        
+        print key,val
         if val['total_counts'] > 0:
             count += 1
         #     print key, val
