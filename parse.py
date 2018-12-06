@@ -20,6 +20,20 @@ def add_to_word_dict(_list, _dict, label):
             _dict[word]["false_counts"] += 1
         _dict[word]["total_counts"] += 1
 
+def create_edge(word_dict):
+    with open('./train.tsv', 'rb') as f:
+        reader = csv.reader(f, delimiter='\t')
+        start, end, capacity = [], [], []
+        for row in reader:
+            tokens = remove_punctuations(row[2]).split(' ')
+
+            for token1, token2 in zip(tokens[:-1], tokens[1:]):
+                tokenid1 = word_dict[token1]['word_id']
+                tokenid2 = word_dict[token2]['word_id']
+                start.append(tokenid1)
+                end.append(tokenid2)
+                capacity.append(99)
+    return start, end, capacity
 
 # remove all punctuations in the srting except hyphen and underscore. e.g "semi-colon&(user_id)+32." => "semi-colon user_id 32"
 def remove_punctuations(_string):
